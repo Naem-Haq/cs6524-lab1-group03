@@ -24,3 +24,7 @@ class Descriptors:
         truncated = np.zeros(self.N, dtype=complex)
         truncated[self.order[:K]] = self.F[:K]
         return np.fft.ifft(truncated)
+
+    def arm(self, n):
+        """Tip-to-tail positions of all rotating vectors at (possibly fractional) sample n."""
+        return np.cumsum(self.F / self.N * np.exp(2j * np.pi * self.omega * n))
