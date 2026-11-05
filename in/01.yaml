@@ -1,0 +1,6 @@
+# Backdrop luma is about 0.03, and thresholds at or below 0.06 leak into the floor
+feature: luma
+sigma: 1.0
+threshold: 0.08
+opening: 1
+closing: 2
