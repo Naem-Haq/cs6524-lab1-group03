@@ -1,37 +1,51 @@
+"""Demonstrate all figures.py outputs with synthetic data: python main.py."""
 
-import yaml
+from pathlib import Path
 
-from PIL import Image
-from os import path as opath
-from mypylibs import animation, figures, filters, fourier, trajectory
+import numpy as np
 
-ROOT_IN = 'in'
-ROOT_OUT = 'out'
-EXT = 'png'
+from mypylibs import figures
 
-def main(case: int):
 
-    img = Image.open(opath.join(ROOT_IN, f'{case:02}.{EXT}'))
-    params = {}
-    config = opath.join(ROOT_IN, f'{case:02}.yaml')
-    if opath.exists(config):
-        with open(config) as f:
-            params = yaml.safe_load(f) or {}
-    num_samples = params.pop('num_samples', 500)
+class DemoDescriptors:
+    """Small sample-data adapter for the interface used by save_final."""
 
-    boundary, steps = filters.extract_boundary(img, **params)
-    x, y = trajectory.calculate(boundary, num_samples)
-    descriptors = fourier.Descriptors(x, y)
+    def __init__(self):
+        t = np.linspace(0, 2 * np.pi, 500, endpoint=False)
+        frequencies = np.array([1] + [k for n in range(2, 12) for k in (n, -n)])
+        amplitudes = 0.35 / np.arange(1, len(frequencies) + 1) ** 1.4
+        amplitudes[0] = 1
+        self.components = amplitudes[:, None] * np.exp(1j * frequencies[:, None] * t)
+        self.z = self.components.sum(axis=0)
 
-    figures.save_transforms(steps, opath.join(ROOT_OUT, f'{case:02}_transforms.{EXT}'))
-    figures.save_trajectory(descriptors.z, opath.join(ROOT_OUT, f'{case:02}_trajectory.{EXT}'))
-    figures.save_final(descriptors, opath.join(ROOT_OUT, f'{case:02}_final.{EXT}'))
-    animation.save_video(descriptors, opath.join(ROOT_OUT, f'{case:02}.mp4'))
+    def num_harmonics(self, percent):
+        return max(1, int(np.ceil(len(self.components) * percent / 100)))
+
+    def reconstruct(self, count):
+        return self.components[:count].sum(axis=0)
+
+
+def main():
+    output = Path(__file__).resolve().parent / 'out'
+    output.mkdir(exist_ok=True)
+
+    # Sample panels cover RGB, grayscale, signed values, and boolean masks.
+    y, x = np.mgrid[-1:1:128j, -1:1:128j]
+    gray = np.exp(-4 * (x ** 2 + y ** 2))
+    rgb = np.stack((gray, 0.6 * gray, 1 - gray), axis=-1)
+    steps = [
+        ('Synthetic RGB image', rgb),
+        ('Synthetic grayscale image', gray),
+        ('Synthetic signed response', x * gray),
+        ('Synthetic threshold mask', gray > 0.4),
+    ]
+    descriptors = DemoDescriptors()
+
+    figures.save_transforms(steps, output / 'demo_transforms.png')
+    figures.save_trajectory(descriptors.z, output / 'demo_trajectory.png')
+    figures.save_final(descriptors, output / 'demo_final.png')
+    print(f'Saved demo_transforms.png, demo_trajectory.png, and demo_final.png to {output}')
+
 
 if __name__ == '__main__':
-
-    case = 0
-    while opath.exists(opath.join(ROOT_IN, f'{case:02}.{EXT}')):
-        print(f'Processing case {case:02}')
-        main(case)
-        case += 1
+    main()
