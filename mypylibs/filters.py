@@ -66,6 +66,9 @@ def extract_boundary(img, feature='luma', sigma=2., threshold=None, invert=False
     blurred = ndimage.convolve(gray, kernel, mode='nearest')
     steps.append((f'Gaussian blur (σ={sigma}, {len(kernel)}×{len(kernel)})', blurred))
 
+    steps.append(('Laplacian of blurred image (comparison)',
+                  ndimage.convolve(blurred, LAPLACIAN, mode='nearest')))
+
     level = otsu_threshold(blurred) if threshold is None else threshold
     mask = blurred < level if invert else blurred > level
     source = 'Otsu' if threshold is None else 'fixed'
@@ -84,11 +87,9 @@ def extract_boundary(img, feature='luma', sigma=2., threshold=None, invert=False
     kept = f'Largest {components} components' if components > 1 else 'Largest component'
     steps.append((f'{kept}, {holes}', mask))
 
-    # Zero padding makes objects cut by the frame produce a closed boundary along it
     response = ndimage.convolve(mask.astype(float), LAPLACIAN, mode='constant')
     steps.append(('Laplacian response', response))
 
-    # Positive response inside the mask selects a single pixel on the inner side of the edge
     boundary = mask & (response > 0)
     steps.append((f'Boundary ({boundary.sum()} px)', boundary))
     return boundary, steps
