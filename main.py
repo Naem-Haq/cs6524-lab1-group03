@@ -3,7 +3,7 @@ import yaml
 
 from PIL import Image
 from os import path as opath
-from mypylibs import figures, filters, fourier, trajectory
+from mypylibs import animation, figures, filters, fourier, trajectory
 
 ROOT_IN = 'in'
 ROOT_OUT = 'out'
@@ -26,6 +26,7 @@ def main(case: int):
     figures.save_transforms(steps, opath.join(ROOT_OUT, f'{case:02}_transforms.{EXT}'))
     figures.save_trajectory(descriptors.z, opath.join(ROOT_OUT, f'{case:02}_trajectory.{EXT}'))
     figures.save_final(descriptors, opath.join(ROOT_OUT, f'{case:02}_final.{EXT}'))
+    animation.save_video(descriptors, opath.join(ROOT_OUT, f'{case:02}.mp4'))
 
 if __name__ == '__main__':
 
