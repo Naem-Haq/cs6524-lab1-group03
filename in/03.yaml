@@ -1,0 +1,7 @@
+# Coloured clothing and skin all have a low minimum channel against the neutral backdrop
+feature: min
+sigma: 1.5
+threshold: 0.72
+invert: true
+opening: 2
+closing: 4

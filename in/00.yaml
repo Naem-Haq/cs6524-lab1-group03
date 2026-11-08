@@ -1,0 +1,6 @@
+feature: min
+sigma: 1.5
+threshold: 0.76
+invert: true
+opening: 3
+closing: 6

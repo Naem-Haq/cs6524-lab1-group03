@@ -1,0 +1,8 @@
+# Both scissors and their handle holes define the shape, and the longer path needs more samples
+sigma: 1.0
+invert: true
+opening: 1
+closing: 1
+components: 2
+fill_holes: false
+num_samples: 1000
